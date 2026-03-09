@@ -1,0 +1,129 @@
+================================================================
+   CAR-COUNTING-YOLO — Project Description
+   Built by Mahadi Hasan Shaisob
+================================================================
+
+OVERVIEW
+--------
+This project is a real-time vehicle detection and counting system
+built using YOLO11 and BotSORT tracking. It detects vehicles from
+video footage and counts how many cross a defined line — by vehicle
+type and direction of travel.
+
+----------------------------------------------------------------
+
+FILES IN THIS PROJECT
+---------------------
+
+1. car-counting.py
+   ----------------
+   A simple, single-purpose vehicle counter.
+   - Detects CARS only (no other vehicle types)
+   - Counts vehicles moving in ONE direction only (top to bottom ↓)
+   - Reads video from a LOCAL FILE PATH defined inside the script
+   - Minimal dashboard — just a basic count overlay on the frame
+   - Good for quick testing or simple single-lane use cases
+   - Run with:  python car-counting.py
+
+2. car-and-other-vehicle.py
+   -------------------------
+   The full-featured local script with multi-class, bi-directional counting.
+   - Detects 4 vehicle types: Car, Motorcycle, Bus, Truck
+   - Counts vehicles in BOTH directions: Down ↓ and Up ↑
+   - Uses a 3-frame crossing buffer to eliminate ghost/false counts
+   - Tracks each vehicle with a persistent clean ID (#1, #2, #3 ...)
+   - Shows direction arrows (v / ^) above counted vehicles
+   - Includes a polished right-side dashboard panel showing:
+       * Live count per vehicle type
+       * Directional breakdown (Down / Up) per class
+       * Total vehicle count
+       * FPS counter
+   - Counting line position is auto-set to 2/3 down the frame
+   - Reads video from a LOCAL FILE PATH defined inside the script
+   - Run with:  python car-and-other-vehicle.py
+
+3. vehicle_counter_app.py
+   -----------------------
+   A Streamlit web application — the user-friendly version.
+   - Runs in the browser, no OpenCV window needed
+   - User can UPLOAD any traffic video (MP4, AVI, MOV, MKV)
+   - Settings panel (sidebar) lets the user adjust:
+       * Detection confidence threshold (0.10 – 0.90)
+       * Counting line position (10% – 90% down the frame)
+   - Live video feed streams frame-by-frame in the browser
+   - Live stats dashboard updates in real time showing:
+       * Total vehicles detected
+       * Moving Down ↓ and Moving Up ↑ totals
+       * Per-class cards: Car / Motorcycle / Bus / Truck
+         each with individual directional badge counts
+   - Progress bar shows how far through the video processing is
+   - Final results table shown after processing completes
+   - Run with:  streamlit run vehicle_counter_app.py
+
+----------------------------------------------------------------
+
+MODELS USED
+-----------
+The following YOLO11 model files should be present in the project folder:
+   - yolo11s.pt   (small — recommended, best speed/accuracy balance)
+   - yolo11n.pt   (nano — fastest, lower accuracy)
+   - yolo11m.pt   (medium — more accurate, slower)
+
+By default all scripts use yolo11s.pt.
+To switch models, change the model path at the top of each script:
+   model = YOLO("yolo11s.pt")  →  model = YOLO("yolo11m.pt")
+
+----------------------------------------------------------------
+
+DETECTION CLASSES (COCO dataset IDs)
+-------------------------------------
+   Class 2  →  Car
+   Class 3  →  Motorcycle
+   Class 5  →  Bus
+   Class 7  →  Truck
+
+----------------------------------------------------------------
+
+HOW THE COUNTING LOGIC WORKS
+-----------------------------
+1. YOLO11 detects vehicles in each frame and outputs bounding boxes.
+2. BotSORT assigns a persistent track ID to each vehicle across frames.
+3. The centroid (center point) of each bounding box is calculated.
+4. Each centroid is classified as above (-1) or below (+1) the counting line.
+5. A 3-frame buffer stores recent side values per track.
+6. A crossing is only confirmed when ALL 3 buffer frames agree on the same side
+   AND that side is different from the last confirmed stable side.
+   This eliminates false counts caused by bounding box jitter.
+7. Direction is determined:
+      Above → Below  =  Down ↓
+      Below → Above  =  Up   ↑
+8. Each (track_id, class) pair is counted only ONCE and permanently marked.
+
+----------------------------------------------------------------
+
+REQUIREMENTS
+------------
+Install dependencies with:
+   pip install -r requirements.txt
+
+Contents of requirements.txt:
+   streamlit>=1.35.0
+   ultralytics>=8.2.0
+   opencv-python>=4.9.0
+   numpy>=1.26.0
+
+----------------------------------------------------------------
+
+QUICK START
+-----------
+Local scripts:
+   1. Set VIDEO_PATH at the top of the script to your video file.
+   2. Run:  python car-and-other-vehicle.py
+   3. Press 'q' to quit the window early.
+
+Streamlit app:
+   1. Run:  streamlit run vehicle_counter_app.py
+   2. Open browser at:  http://localhost:8501
+   3. Upload a video, adjust settings, click Start Counting.
+
+================================================================

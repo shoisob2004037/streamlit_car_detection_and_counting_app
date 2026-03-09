@@ -1,0 +1,21 @@
+# Virtual Environment
+venv/
+ENV/
+.env
+
+# Python Bytecode & Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Large Model Weights (YOLO and RT-DETR)
+*.pt
+
+# Video Files
+*.mp4
+
+# OS specific files
+.DS_Store
+Thumbs.db
